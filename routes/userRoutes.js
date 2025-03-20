@@ -77,51 +77,32 @@ router.get('/:_id/logs', (req, res) => {
   let { from, to, limit } = req.query;
 
   let exercises = logs[userID];
-  let filteredList = [];
+  let filteredList = exercises.log;   // default
 
   limit = Number(limit) || 0;
 
-  console.log(`Queries: ${JSON.stringify(req.query)}`)
-
+  // filter dates based on queries
   if (from && to) {
     from = new Date(from);
     to = new Date(to);
-
-    for (let x=0; x<exercises.log.length; x++) {
-      let entryDate = new Date(exercises.log[x].date);
-      if (entryDate >= from && entryDate <= to) {
-        console.log(exercises.log[x])
-        filteredList.push(exercises.log[x]);
-      } 
-    }
-
-    if (limit > 0) {
-      filteredList = filteredList.slice(0, limit);
-      limit = 0;
-    }
-
-    console.log(`filtered list: ${JSON.stringify(filteredList)}`)
-    res.json({
-      username: exercises.username,
-      count: exercises.count,
-      _id: exercises._id,
-      log: filteredList
+    
+    filteredList = filteredList.filter(entry => {
+      let entryDate = new Date(entry.date);
+      return entryDate >= from && entryDate <= to;
     });
-    return;
   } 
 
+  // filter if limit is present
   if (limit > 0) {
-    filteredList = exercises.log.slice(0, limit);
-    res.json({
-      username: exercises.username,
-      count: exercises.count,
-      _id: exercises._id,
-      log: filteredList
-    });
-    return;
+    filteredList = filteredList.slice(0, limit);
   }
 
-  res.json(exercises);
+  res.json({
+    username: exercises.username,
+    count: exercises.count,
+    _id: exercises._id,
+    log: filteredList
+  });
 });
 
 module.exports = router;
